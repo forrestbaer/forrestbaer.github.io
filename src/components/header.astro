@@ -1,0 +1,66 @@
+---
+import HeaderLink from './header_link.astro';
+import { SITE_TITLE } from '../consts';
+---
+
+<header>
+	<nav>
+		<div class="internal-links">
+      <a href="/"><h2>{SITE_TITLE}</h2></a>
+			<HeaderLink href="/blog">collected</HeaderLink>
+      <HeaderLink href="/about">about/links</HeaderLink>
+		</div>
+	</nav>
+</header>
+
+<style>
+	header {
+		margin: 0;
+		padding: 0 1rem;
+    position: relative;
+    z-index: 32767;
+	}
+	nav {
+		display: flex;
+		align-items: center;
+		justify-content: left;
+    padding: 1rem 0;
+	}
+	.internal-links a {
+		padding: 0 0.5rem;
+		color: var(--gray-light);
+		text-decoration: none;
+	}
+  .internal-links a:hover {
+    color: var(--primary);
+  }
+	.internal-links a.active {
+		text-decoration: none;
+    color: var(--primary);
+	}
+	.internal-links a.active::before {
+    content: ">";
+  }
+	.social-links,
+	.social-links a {
+		display: flex;
+	}
+	.internal-links h2 {
+    display: inline-block;
+    background: var(--gray-light);
+    color: var(--black);
+		font-size: 1em;
+    padding: 0.2rem 0.4rem;
+		text-decoration: none;
+    position: relative;
+    top: -1px;
+	}
+  .internal-links a:hover > h2 {
+    background: var(--primary);
+  }
+	@media (max-width: 720px) {
+		.social-links {
+			display: none;
+		}
+	}
+</style>

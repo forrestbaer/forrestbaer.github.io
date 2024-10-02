@@ -1,0 +1,83 @@
+---
+import Layout from '../layouts/single_column.astro';
+import meNdrake from './_d2_su.png';
+import { Image } from 'astro:assets'
+---
+
+<Layout
+  description="things about me and sites i ilke"
+>
+  <Image src={meNdrake} alt="person and dog" />
+
+  <i class="caption">* me and drake *</i>
+
+  <div id="about">
+    <p><span>GOES BY:</span> Forrest, Monk, Alksdeef</p>
+    <p><span> SOCIAL:</span> <a rel="me" href="https://social.toplap.org/@forrest">@forrest@toplap.org</a></p>
+    <p><span>GPG KEY:</span>
+      <a href="/fb_pub.asc">FB_PUB.ASC</a>
+    </p>
+    <p><span> GITHUB:</span> <a href="https://github.com/forrestbaer">github.com/forrestbaer</a></p>
+  </div>
+
+  <div id="links">
+    <h3>Links</h3>
+    <div id="lastChecked">[ validated on {(new Date()).toLocaleDateString('en-US')} ]</div>
+    <h4>Electronics</h4>
+    <ul>
+      <li><a href="https://componentsearchengine.com/">Component Search Engine</a></li>
+      <li><a href="https://tracespace.io/view/">Tracespace View, gerber preview</a></li>
+      <li><a href="https://www.kicad.org/">Kicad EDA</a></li>
+      <li><a href="https://www.falstad.com/circuit/circuitjs.html">Falstad circuit simulator</a></li>
+    </ul>
+    <h4>Keyboards</h4>
+    <ul>
+      <li><a href="https://colemakmods.github.io/mod-dh/">Colemak mod-dh</a></li>
+      <li><a href="https://deploy-preview-722--zmk.netlify.app/">ZMK keyboard firmware</a></li>
+      <li><a href="https://ranelpadon.github.io/ngram-type/">Ngram typing practice</a></li>
+      <li><a href="https://monkeytype.com/">Monkeytype, typing practice</a></li>
+      <li><a href="https://artsey.io/">Artsey 8key layout</a></li>
+    </ul>
+    <h4>Audio</h4>
+    <ul>
+      <li><a href="https://puredata.info">Pure Data, visual programming language</a></li>
+      <li><a href="https://tidalcycles.org/">TidalCycles, functional live-coding env</a></li>
+      <li><a href="https://llllllll.co/">Monome "lines" forum</a></li>
+      <li><a href="https://www.ciat-lonbarde.net/">Peter Blasser, Ciat-Lonbarde</a></li>
+      <li><a href="https://nonlinearcircuits.com">Nonlinearcircuits, wild AUS instruments</a></li>
+      <li><a href="https://www.littlesounddj.com/lsd/index.php">Little sound DJ for Gameboy</a></li>
+      <li><a href="https://github.com/trash80/Arduinoboy">Arduinoboy, LSDJ to Usb/midi</a></li>
+    </ul>
+    <h4>Visual</h4>
+    <ul>
+      <li><a href="http://paperjs.org/">PaperJS, vector graphics scripting library</a></li>
+      <li><a href="https://www.brm.io/matter-js/">Matter.js, 2d physics engine</a></li>
+      <li><a href="https://lvllvl.com/">lvllvl, character set editor (big charset lib)</a></li>
+    </ul>
+
+  </div>
+</Layout>
+
+<style>
+.caption {
+  text-align:right;
+  display:block;
+  padding-right:2ch;
+}
+#lastChecked {
+  font-size: 0.5rem;
+  margin-bottom: 2rem;
+}
+#about {
+  margin: 1rem 0 2rem
+}
+#about p {
+  padding: 0;
+  margin: 0;
+}
+#about p span {
+  width: 10ch;
+  display: inline-block;
+  text-align: right;
+}
+</style>

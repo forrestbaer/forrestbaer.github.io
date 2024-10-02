@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# 2337ff
+# 552180
+
+didder \
+  --brightness 20% \
+  --width 360 \
+  --upscale 2 \
+  --strength 90% \
+  --palette "black white" \
+  -i $1.jpg \
+  -o $1_su.png \
+  bayer 128x128
+
+didder \
+  --brightness 20% \
+  --width 240 \
+  --upscale 3 \
+  --strength 90% \
+  --palette "black white" \
+  -i $1.jpg \
+  -o $1.png \
+  bayer 128x128
+
+didder \
+  --brightness 20% \
+  --width 120 \
+  --upscale 2 \
+  --strength 80% \
+  --palette "black white" \
+  -i $1.jpg \
+  -o $1_sm.png \
+  bayer 4x4

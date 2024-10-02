@@ -1,0 +1,54 @@
+---
+import BaseHead from '@components/base_head.astro';
+import Header from '@components/header.astro';
+import Footer from '@components/footer.astro';
+
+const { title, description } = Astro.props;
+---
+
+<html lang="en">
+	<head>
+		<BaseHead title={title} description={description} />
+		<style>
+			main {
+				width: calc(100% - 2em);
+				max-width: 100%;
+				margin: 0;
+        padding: 0;
+			}
+			.prose {
+				width: 720px;
+				max-width: calc(100% - 2em);
+				padding: 2rem;
+			}
+			.title {
+        display: block;
+			}
+			.title h1 {
+        font-size: 1.8rem;
+        margin: 0;
+			}
+			.date {
+				color: var(--gray);
+			}
+			.last-updated-on {
+				font-style: italic;
+			}
+		</style>
+	</head>
+
+	<body>
+		<Header />
+		<main>
+			<article>
+				<div class="prose">
+					<div class="title">
+						<h1>{title}</h1>
+					</div>
+					<slot />
+				</div>
+			</article>
+		</main>
+		<Footer />
+	</body>
+</html>

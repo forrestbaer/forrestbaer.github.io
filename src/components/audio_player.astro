@@ -1,0 +1,184 @@
+---
+import { nanoid } from 'nanoid';
+interface Props {
+  src: string;
+  description: string;
+}
+
+const vcID = 'vc_' + nanoid(4);
+const wrapperID = 'audiowrapper_' + nanoid(4);
+const { src, description } = Astro.props;
+---
+<audio-player id={wrapperID} data-src={src}>
+  <button>play</button>
+  <span>{description}</span>
+  <input type="range" id={vcID} min="0" max="100" value="60" />
+</audio-player>
+
+<script>
+import WaveSurfer from "wavesurfer.js";
+
+class AudioPlayer extends HTMLElement {
+  connectedCallback() {
+    const r = document.querySelector(':root');
+    const rs = getComputedStyle(r as any)
+    const button = this.querySelector('button')
+    const vc = this.querySelector('input[type="range"]') as HTMLInputElement
+    const ctx = document.createElement('canvas').getContext('2d')
+    const opts = {
+      barWidth: 3,
+      barGap: 1,
+      barRadius: 0,
+      cursorWidth: 3,
+      container: `#${this.id}`,
+      url: this.dataset.src,
+      progressColor: rs?.getPropertyValue('--gray-light'),
+      cursorColor: rs?.getPropertyValue('--white'),
+    }
+    const ws = WaveSurfer.create({...opts})
+    ws.setVolume(0.2)
+    vc?.addEventListener('input', () => {
+      const val = Number(vc.value)
+      ws.setVolume(val/100);
+    });
+    button?.addEventListener('click', () => {
+      ws.playPause()
+      if (button.textContent === "play") {
+        button.textContent = "stop"
+      } else {
+        button.textContent = "play"
+      }
+    });
+  }
+}
+customElements.define('audio-player', AudioPlayer);
+</script>
+
+<style>
+audio-player {
+  display: block;
+  border: 2px solid var(--gray-dark);
+  position: relative;
+  margin: 0 2rem 3rem 0;
+  padding: 0.5rem;
+  background: var(--gray-dark);
+}
+audio-player > span {
+  font-size: 1rem;
+  position: absolute;
+  bottom: -2.2rem;
+  right: 7ch;
+  border: none;
+  margin: 0;
+}
+button {
+  font-family: 'MicroKnight', serif;
+  font-size: 1rem;
+  position: absolute;
+  bottom: -2.2rem;
+  right: -2px;
+  background: var(--gray);
+  border: none;
+  border-radius: 0;
+  color: var(--black);
+  padding: 0.3rem 0.5rem;
+  z-index: 32767;
+}
+button:hover {
+  background: var(--primary);
+  cursor: pointer;
+}
+@media all and (max-width: 500px) {
+  button {
+    font-size: 2rem;
+    right: inherit;
+    left: -2px;
+  }
+  audio-player span {
+    font-size: 0.5rem;
+    right: -2px;
+    bottom: -2.5rem;
+    max-width: 67%;
+    line-height: 1rem;
+    text-align: right;
+  }
+}
+</style>
+
+<!-- input range styling from cssportal.com/style-input-range -->
+<style>
+audio-player > input[type="range"] {
+  position: absolute;
+  right: -23px;
+  bottom: 0;
+  top: 0;
+  margin: 0;
+  writing-mode: vertical-lr;
+  direction: rtl;
+  vertical-align: middle;
+}
+
+/*********** Baseline, reset styles ***********/
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* Removes default focus */
+input[type="range"]:focus {
+  outline: none;
+}
+
+/******** Chrome, Safari, Opera and Edge Chromium styles ********/
+/* slider track */
+input[type="range"]::-webkit-slider-runnable-track {
+  background-color: var(--gray-dark);
+  border-radius: 0px;
+  width: 0.5rem;
+  margin: 0;
+  opacity: 0.6;
+}
+
+/* slider thumb */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  margin-left: -3px; /* Centers thumb on the track */
+  background-color: var(--gray);
+  border: 2px solid var(--gray);
+  border-radius: 50%;
+  height: 0.8rem;
+  width: 0.8rem;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+  outline: 2px solid var(--primary);
+  outline-offset: 0.1rem;
+}
+
+/*********** Firefox styles ***********/
+/* slider track */
+input[type="range"]::-moz-range-track {
+  background-color: var(--gray-light);
+  border-radius: 0;
+  height: 0.5rem;
+  margin: 0;
+}
+
+/* slider thumb */
+input[type="range"]::-moz-range-thumb {
+  background-color: var(--gray-dark);
+  border: none; /*Removes extra border that FF applies*/
+  border-radius: 0;
+  height: 1rem;
+  width: 1rem;
+}
+
+input[type="range"]:focus::-moz-range-thumb{
+  outline: 3px solid var(--gray-dark);
+  outline-offset: 0.125rem;
+}
+</style>
