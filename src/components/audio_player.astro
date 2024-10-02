@@ -31,7 +31,7 @@ class AudioPlayer extends HTMLElement {
       barRadius: 0,
       cursorWidth: 3,
       container: `#${this.id}`,
-      url: 'forrestbaer.github.io/' + this.dataset.src,
+      url: this.dataset.src,
       progressColor: rs?.getPropertyValue('--gray-light'),
       cursorColor: rs?.getPropertyValue('--white'),
     }
