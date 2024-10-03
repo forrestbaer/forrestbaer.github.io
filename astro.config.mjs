@@ -6,8 +6,8 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://frrst.xyz',
-	integrations: [mdx(), sitemap()],
+  site: 'https://frrst.xyz',
+  integrations: [mdx(), sitemap()],
   markdown: {
     shikiConfig: {
       // theme: 'github-light-high-contrast'
