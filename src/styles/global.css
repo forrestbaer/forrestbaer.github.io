@@ -34,6 +34,12 @@
     font-style: normal;
     font-display: swap;
 }
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+* {
+  margin: 0;
+}
 body {
 	font-family: 'MicroKnight', sans-serif;
   background: var(--black);
@@ -43,14 +49,14 @@ body {
 	word-wrap: break-word;
 	overflow-wrap: break-word;
 	color: var(--gray);
-	line-height: 1.6;
+	line-height: 1.5;
   font-size: 24px;
 }
 main {
 	width: 720px;
-	max-width: calc(100% - 2em);
+	max-width: calc(100% - 2rem);
 	margin: auto;
-	padding: 3em 1em;
+	padding: 3rem 1rem;
 }
 h1,
 h2,

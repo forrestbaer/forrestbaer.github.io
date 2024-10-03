@@ -12,7 +12,7 @@ const posts = (await getCollection('blog')).sort(
   title="me treasures"
 	description="hey it the weblog of forrest baer"
 >
-  <p>log of collected ideas and experimentations</p>
+  <p>[<a href="/rss.xml">RSS</a>] // log of collected ideas and experimentations</p>
 <ul>
   {
     posts.map((post: any) => (
@@ -26,6 +26,7 @@ const posts = (await getCollection('blog')).sort(
     ))
   }
 </ul>
+<a rel="me" href="https://social.toplap.org/@forrest" style="display:none">Mastodon</a>
 </Layout>
 
 <style>
@@ -53,7 +54,7 @@ ul {
 }
 .post p {
   margin: 0;
-  line-height: 1.6rem;
+  line-height: 1.6em;
   padding: 0.4rem 0 0 1ch;
 }
 .post .date {
