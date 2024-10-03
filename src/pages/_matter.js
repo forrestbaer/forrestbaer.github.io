@@ -66,10 +66,10 @@ var stack = function(scale, columns, rows) {
     return Bodies.circle(x, y,
       r() * scale,
       {
-        friction: 0.7,
+        friction: 0.2,
         frictionAir: 0.0001,
         frictionStatic: 0.7,
-        mass: Common.random(0.1,3),
+        mass: Common.random(0.1,1),
         restitution: Math.cos(r()),
         render: { fillStyle: colors() },
       });
@@ -77,8 +77,6 @@ var stack = function(scale, columns, rows) {
 };
 
 
-// const cw = render.canvas.width;
-// const ch = render.canvas.height;
 const cw = document.body.clientWidth;
 const ch = document.body.clientHeight;
 
@@ -100,22 +98,41 @@ const worker = Bodies.polygon(hw, hh,
           Body.applyForce(bodyB, bodyB.position, force);
         }]
     },
+    label: 'worker',
     friction: 1,
     restitution: 1,
     mass: 30,
     render: { fillStyle: '#AAA' }
   })
 
+const walls =  [
+  Bodies.rectangle(0, 0, cw*2, 30, { restitution: 1, isStatic: true, render: { visible: false } }),
+  Bodies.rectangle(cw, 0, 30, ch*2, {restitution: 1,  isStatic: true, render: { visible: false }}),
+  Bodies.rectangle(0, ch, cw*2, 30, {restitution: 1,  isStatic: true, render: { visible: false } }),
+  Bodies.rectangle(0, 0, 30, ch*2, { restitution: 1, isStatic: true, render: { visible: false }})
+]
+
 Composite.add(world, [
   stack(0.5, 5, 5),
   stack(0.3, 5, 5),
   worker,
-  Bodies.rectangle(0, 0, cw*2, 30, { restitution: 1, isStatic: true, render: { visible: false } }),
-  Bodies.rectangle(cw, 0, 30, ch*2, {restitution: 1,  isStatic: true, render: { visible: false }}),
-  Bodies.rectangle(0, ch, cw*2, 30, {restitution: 1,  isStatic: true, render: { visible: false } }),
-  Bodies.rectangle(0, 0, 30, ch*2, { restitution: 1, isStatic: true, render: { visible: false }}),
+  ...walls,
 ]);
 
+// an example of using collisionActive event on an engine
+Events.on(engine, 'collisionActive', function(event) {
+  var pairs = event.pairs;
+
+  // change object colours to show those in an active collision (e.g. resting contact)
+  for (var i = 0; i < pairs.length; i++) {
+    var pair = pairs[i];
+    if (pair.bodyA.label === 'worker' || pair.bodyB.label === 'worker') {
+      pair.bodyA.render.fillStyle = '#FFF';
+    }
+  }
+});
+
+// chaos shit
 const fx = (x1, r) => {
   return r * x1 * (1 - x1);
 }
@@ -137,7 +154,7 @@ Events.on(engine, 'beforeUpdate', function(event) {
   let yea = Math.floor(ts % 18) === 0;
   let cool = Math.floor(ts % 13) === 0;
   let { x, y } = worker.position
-  let i = it(Common.random(-1,1))
+  let i = it(Common.random(-2,2))
   if (yea) {
     phase = phases[0];
     if (lastPhase !== phase) {
@@ -148,7 +165,7 @@ Events.on(engine, 'beforeUpdate', function(event) {
     let r = Common.random(-1,1)
     let force = Vector.create(i * (Common.random(-2,2) * r), i * Common.random(-2,2) * r)
     Body.setMass(worker, 30)
-    worker.render.fillStyle = "#222";
+    worker.render.fillStyle = "#000d8a";
     Body.applyForce(worker, vec, force)
     lastPhase = phases[0];
   } else if (cool) {
@@ -173,20 +190,13 @@ Events.on(engine, 'beforeUpdate', function(event) {
     let b = Common.random(4,-4)
     let force = r ?
       Vector.create(i*a,i*b) : Vector.create(i*b,i*a)
-    Body.setMass(worker, 70)
+    Body.setMass(worker, 50)
     worker.render.fillStyle = "#2337ff";
     Body.applyForce(worker, vec, force)
     lastPhase = phases[2];
   }
-  // Math.cos(engine.timing.timestamp * 0.0005);
-  //Math.sin(engine.timing.timestamp * 0.0005);
-  if (!yea) {
-    engine.gravity.x = Math.sin(Common.random(-1,1)) * i
-    engine.gravity.y = Math.cos(Common.random(-1,1)) * i
-  } else {
-    engine.gravity.x = Math.sin(Common.random(-1,1)) * 0.05
-    engine.gravity.y = Math.cos(Common.random(-1,1)) * 0.05
-  }
+  engine.gravity.x = 0
+  engine.gravity.y = 0
 });
 
 //-------------------------------------------------------//
@@ -201,12 +211,6 @@ render.mouse = mouse;
 
 // fit the render viewport to the scene
 // Render.lookAt(render, Composite.allBodies(world));
-
-// fit the render viewport to the scene
-// Render.lookAt(render, {
-//     min: { x: 0, y: 0 },
-//     max: { x: cw, y: ch }
-// });
 
 // update viewport on resize
 // TODO: add a debounce
