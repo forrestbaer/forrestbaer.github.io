@@ -1,0 +1,102 @@
+---
+import { nanoid } from 'nanoid'
+interface Props {
+  autoEval: boolean;
+}
+
+const buttonID = 'button_' + nanoid(4)
+const wrapperID = 'runner_' + nanoid(4)
+
+const { autoEval } = Astro.props
+---
+
+<script-runner id={ wrapperID }>
+  <button id={buttonID} data-eval={autoEval}>
+    Evaluate
+  </button>
+</script-runner>
+
+<style is:global>
+pre {
+  border-color: var(--gray-dark);
+}
+pre.hov {
+  border-color: var(--gray);
+}
+</style>
+
+<script>
+const evalInContext = (js: string, context: any) => {
+  return function() { return eval(js); }.call(context);
+}
+interface ScriptRunner extends HTMLElement {
+  button: HTMLButtonElement;
+  pre: HTMLPreElement;
+}
+class ScriptRunner extends HTMLElement {
+  constructor() {
+    super();
+    this.button = this.querySelector('button')!
+    this.pre = this.previousElementSibling! as HTMLPreElement
+  }
+  connectedCallback() {
+    if (this.button.dataset.eval) {
+      setTimeout(() => this.button.click(), 0)
+    }
+    this.button.addEventListener('mouseenter', () => {
+      this.pre.className = 'hov'
+    })
+    this.button.addEventListener('mouseleave', () => {
+      this.pre.className = ''
+    })
+    this.button.addEventListener('click', () => {
+      evalInContext(this.pre.textContent ?? "", this)
+      this.pre.className = ''
+      this.button.className = 'hidden'
+    })
+  }
+}
+customElements.define('script-runner', ScriptRunner);
+</script>
+
+<style is:global>
+script-runner canvas {
+  background: var(--gray);
+  display: block;
+  margin-top: 1em;
+}
+</style>
+
+<style>
+script-runner {
+  margin-bottom: 2em;
+  display:block;
+}
+script-runner button {
+  font-family: 'MicroKnight', sans-serif;
+  font-size: 1.2rem;
+  padding: 0.4rem 0.8rem;
+  background: var(--black);
+  border: 2px solid var(--gray);
+  color: var(--gray);
+  margin-left: 0.3em;
+}
+script-runner button:active,
+script-runner button:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--black);
+  cursor: pointer;
+}
+script-runner button:disabled {
+  color: var(--gray-dark);
+  border-color: var(--gray-dark);
+}
+script-runner button:disabled:hover,
+script-runner button:disabled:active {
+  background: transparent;
+  color: var(--gray-dark);
+  border-color: var(--gray-dark);
+  cursor: not-allowed;
+}
+</style>

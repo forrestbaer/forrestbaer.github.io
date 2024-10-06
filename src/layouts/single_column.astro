@@ -16,18 +16,6 @@ const { title, description } = Astro.props;
 				margin: 0;
         padding: 0;
 			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				padding: 2rem;
-			}
-			.title {
-        display: block;
-			}
-			.title h1 {
-        font-size: 1.8rem;
-        margin: 0;
-			}
 			.date {
 				color: var(--gray);
 			}
@@ -42,9 +30,6 @@ const { title, description } = Astro.props;
 		<main>
 			<article>
 				<div class="prose">
-					<div class="title">
-						<h1>{title}</h1>
-					</div>
 					<slot />
 				</div>
 			</article>
