@@ -10,7 +10,7 @@ export default defineConfig({
   markdown: {
     syntaxHighlight: 'shiki',
     shikiConfig: {
-      wrap: true,
+      wrap: false,
       theme: {
         name: 'my-theme',
         settings: [

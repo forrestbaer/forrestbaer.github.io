@@ -1,0 +1,153 @@
+---
+title: '0002 - Quilting'
+description: '.. or, how to fill a big box with a bunch of smaller boxes with things that may or may not fit together visually.'
+pubDate: Oct 11 2024
+---
+
+**a pattern building system**
+
+Before getting to any code, I want to define the problem up front in as clear terms as possible.
+
+This wont be a generic implementation, I have an idea visually of what I would like to play with which started on a piece of graph paper:
+
+The visual system is based on a set of rules and basic shapes. The rules for this visual system are:
+
+- first cell is always a single line
+- second cell is always a triangle with one corner touching one point of the first cell
+- third cell is always a single line with one point touching one un-attached corner of the second cell
+- fourth cell is always a triangle with one corner touching the un-attached point of the third cell's line
+- no triangle points may touch anywhere
+- no edges may overlap
+- must be scaleable to any size
+
+```js
+// lets map our grid cell "connection" mapping as follows:
+// 1 indicates a connection, default 0 indicates none
+// cell.points = [top-left, top-right, bottom-right, bottom-left]
+//
+// each connection in a connection map can share at most one point with another shape
+//
+const pointTouchMap = {
+  line: {
+    top:     [1, 1, 0, 0],
+    right:   [0, 1, 1, 0],
+    left:    [1, 0, 0, 1],
+    bottom:  [0, 0, 1, 1],
+    diag_tl: [1, 0, 1, 0],
+    diag_tr: [0, 1, 0, 1],
+  },
+  tri: {
+    tl:      [1, 1, 0, 1],
+    tr:      [1, 1, 1, 0],
+    br:      [0, 1, 1, 1],
+    bl:      [1, 0, 1, 1],
+  }
+}
+
+const makeGrid = (x, y, state = [0, 0, 0, 0]) => {
+  return [...Array(x)].map((e,i) => [...Array(y)].map((e,j) => {
+    return { x: j, y: i, section: state }
+  }))
+}
+
+const makeBlockCanvas = (eW, eH, x, y) => {
+  const canvas = document.createElement('canvas')
+  canvas.width = x * eW
+  canvas.height = y * eH
+  const ctx = canvas.getContext("2d")
+  const grid = makeGrid(x, y)
+
+  return { canvas, ctx, eW, eH, grid }
+}
+
+const { canvas, ctx, eW, eH, grid } = makeBlockCanvas(20, 20, 10, 10)
+this.appendChild(canvas)
+
+const compareCellMap = (a, b) => {
+  return a.map((v, i) => v && b[i]).filter(x => x == 1).length
+}
+
+const getCardinalNeighbors = (grid, row, col) => {
+  const neighbors = [];
+  for (let i = Math.max(0, row - 1); i <= Math.min(row + 1, grid.length - 1); i++) {
+    for (let j = Math.max(0, col - 1); j <= Math.min(col + 1, grid[i].length - 1); j++) {
+      if (i !== row || j !== col) {
+        neighbors.push({ x: i, y: j, section: grid[i][j] });
+      }
+    }
+  }
+  return neighbors;
+}
+
+// console.log(getCardinalNeighbors(grid, 0, 0))
+// console.log(compareCellMap(pointMap[0], pointMap[6]))
+// console.log(compareCellMap(pointMap[0], pointMap[8]))
+
+const drawGridSection = (ctx, section, eW, eH, x, y) => {
+  grid[x][y].section = section
+
+  const points = [
+    [x * eW, y * eH],               // top-left
+    [(x * eW) + eW, y * eH],        // top-right
+    [(x * eW) + eW, (y * eH) + eH], // bottom-right
+    [x * eW, (y * eH) + eH]         // bottom-left
+  ];
+
+  const moveToPoint = (index, action) => {
+    if (section[index] === 1) ctx[action](...points[index]);
+  };
+
+  const startIdx = section.findIndex(e => e === 1);
+  moveToPoint(startIdx, 'moveTo');
+
+  for (let i = (startIdx + 1) % 4; i !== startIdx; i = (i + 1) % 4) {
+    moveToPoint(i, 'lineTo');
+  }
+
+  ctx.stroke();
+  ctx.fill();
+}
+
+drawGridSection(ctx, pointTouchMap.tri.tr, eW, eH, 1, 5)
+drawGridSection(ctx, pointTouchMap.line.bottom, eW, eH, 7, 0)
+drawGridSection(ctx, pointTouchMap.tri.bl, eW, eH, 2, 5)
+drawGridSection(ctx, pointTouchMap.tri.tl, eW, eH, 4, 9)
+drawGridSection(ctx, pointTouchMap.line.diag_tl, eW, eH, 6, 8)
+```
+<ScriptRunner autoEval="true" />
+
+The objective is to create a system which can produce many similar but never exactly the same images from a series of tiles. Each tile may or may not be a part of a larger segment which is just a list of ordered tiles. The approach I will be taking is:
+
+- Create a virtual grid, or 2 dimensional array to hold each element, which accepts the following parameters
+  - element width
+  - element height
+  - grid width
+  - grid height
+
+```js
+
+```
+
+Here are the basics for setting up a canvas and drawing to it. Not shown here are the css styles for setting the canvas dimensions & background color.
+
+import ScriptRunner from '@components/script_runner.astro';
+
+```js
+// create a canvas, or query for one
+const canvas = document.createElement('canvas')
+this.appendChild(canvas)
+// CanvasRenderingContext2D
+const ctx = canvas.getContext("2d")
+
+// set fill color and draw a rectangle
+ctx.fillStyle = 'black'
+ctx.fillRect(10,10,100,30)
+```
+<ScriptRunner />
+
+```js
+const lr = document.createElement('div')
+console.log(this)
+console.log(this.button)
+```
+<ScriptRunner />
