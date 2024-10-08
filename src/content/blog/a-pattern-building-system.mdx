@@ -4,30 +4,33 @@ description: '.. or, how to fill a big box with a bunch of smaller boxes with th
 pubDate: Oct 11 2024
 ---
 
-**a pattern building system**
+import ScriptRunner from '@components/script_runner.astro';
+
+### A pattern building system
 
 Before getting to any code, I want to define the problem up front in as clear terms as possible.
+
+The objective is to create a system which can produce many similar but never exactly the same images from a series of tiles. Each tile may or may not be a part of a larger segment which is just a list of ordered tiles.
 
 This wont be a generic implementation, I have an idea visually of what I would like to play with which started on a piece of graph paper:
 
 The visual system is based on a set of rules and basic shapes. The rules for this visual system are:
 
-- first cell is always a single line
-- second cell is always a triangle with one corner touching one point of the first cell
-- third cell is always a single line with one point touching one un-attached corner of the second cell
-- fourth cell is always a triangle with one corner touching the un-attached point of the third cell's line
-- no triangle points may touch anywhere
-- no edges may overlap
-- must be scaleable to any size
+#### Rules
+
+> 1. A grid contains cells indexed as x, y, cells contain at most one shape each
+> 2. The first cell is always a single line
+> 3. The second cell is always a triangle with one corner touching one point of the first cell
+> 4. The third cell is always a single line with one point touching one un-attached corner of the second cell
+> 5. The fourth cell is always a triangle with one corner touching the un-attached point of the third cell's line
+> 6. No shape edges may overlap, each shape can only share one point per adjacent shape
+> 7. Final output must be scaleable to any size
+
+First lets break down our shapes into a simple encoding we can use to determine where each shape touches the corner of a cell. This will allow us to render shapes at any size via scaling, and determine what corners contain points when it comes to rules 3-6.
 
 ```js
-// lets map our grid cell "connection" mapping as follows:
-// 1 indicates a connection, default 0 indicates none
-// cell.points = [top-left, top-right, bottom-right, bottom-left]
-//
-// each connection in a connection map can share at most one point with another shape
-//
-const pointTouchMap = {
+// shapes map [top-left, top-right, bottom-right, bottom-left]
+const SM = {
   line: {
     top:     [1, 1, 0, 0],
     right:   [0, 1, 1, 0],
@@ -36,118 +39,252 @@ const pointTouchMap = {
     diag_tl: [1, 0, 1, 0],
     diag_tr: [0, 1, 0, 1],
   },
-  tri: {
+  tri: { // by what corner they fit in
     tl:      [1, 1, 0, 1],
     tr:      [1, 1, 1, 0],
     br:      [0, 1, 1, 1],
     bl:      [1, 0, 1, 1],
   }
 }
+```
 
-const makeGrid = (x, y, state = [0, 0, 0, 0]) => {
-  return [...Array(x)].map((e,i) => [...Array(y)].map((e,j) => {
-    return { x: j, y: i, section: state }
-  }))
+#### Groundwork
+
+Next lets create a function to generate a grid of size x, y with some default values. And set up a function for drawing and clearing our canvas.
+
+```js
+class Shape {
+  constructor(stage, x, y, touch_points) {
+    this.stage = stage
+    this.touch_points = touch_points
+    this.x = x
+    this.y = y
+  }
 }
 
-const makeBlockCanvas = (eW, eH, x, y) => {
-  const canvas = document.createElement('canvas')
-  canvas.width = x * eW
-  canvas.height = y * eH
-  const ctx = canvas.getContext("2d")
-  const grid = makeGrid(x, y)
-
-  return { canvas, ctx, eW, eH, grid }
+class Stage {
+  constructor(parent, width, height, cell_size) {
+    this.width = width
+    this.height = height
+    this.cell_size = cell_size
+    this.grid = this.makeGrid(width, height)
+    this.canvas = document.createElement('canvas')
+    this.canvas.width = (this.cell_size * this.width)
+    this.canvas.height = (this.cell_size * this.height)
+    this.ctx = this.canvas.getContext('2d')
+    parent.appendChild(this.canvas)
+  }
+  makeGrid(width, height, t = [1, 1, 1, 0]) {
+    return [...Array(width)].map((e,i) => [...Array(height)].map((e,j) => {
+      // fill with a bunch of top-right triangles
+      return new Shape(this, i, j, t)
+    }))
+  }
 }
 
-const { canvas, ctx, eW, eH, grid } = makeBlockCanvas(20, 20, 10, 10)
-this.appendChild(canvas)
+// 20x20 cells in a 11x11 grid = 220pxx220px canvas
+const our_stage = new Stage(this, 11, 11, 20)
 
-const compareCellMap = (a, b) => {
-  return a.map((v, i) => v && b[i]).filter(x => x == 1).length
+```
+<ScriptRunner includeAbove="true" />
+
+#### Drawing
+
+Ok great, canvas and a grid, ✔️. Now lets draw to it. The drawing function should take a shapeMap index, and draw it using a context to an x, y position using the element width and element height for the grid.
+
+Since can draw something to an element, we should also have the ability to remove an element, and by extension clear the entire canvas.
+
+```js
+Shape.prototype.draw = function() {
+  const cs = this.stage.cell_size
+  const tp = this.touch_points
+
+  // TODO: fails on [0, 0, 0, 0]
+
+  const points = [
+    [this.x * cs, this.y * cs],               // top-left
+    [(this.x * cs) + cs, this.y * cs],        // top-right
+    [(this.x * cs) + cs, (this.y * cs) + cs], // bottom-right
+    [this.x * cs, (this.y * cs) + cs]         // bottom-left
+  ]
+
+  const moveToPoint = (index, action) => {
+    if (tp[index] === 1) this.stage.ctx[action](...points[index])
+  }
+
+  // find the first point in the shape
+  const startIdx = tp.findIndex(e => e === 1);
+  moveToPoint(startIdx, 'moveTo')
+
+  // draw the lines
+  for (let i = (startIdx + 1) % 4; i !== startIdx; i = (i + 1) % 4) {
+    moveToPoint(i, 'lineTo')
+  }
+
+  this.stage.ctx.stroke()
+  this.stage.ctx.fill()
 }
 
-const getCardinalNeighbors = (grid, row, col) => {
+Stage.prototype.render = function() {
+  this.grid.forEach(y => {
+    y.forEach(x => {
+      x.draw()
+    })
+  })
+}
+
+our_stage.render()
+```
+<ScriptRunner includeAbove="true" />
+
+#### Rule abiding
+
+Nice, so now we have some shapes on a canvas, all gridded up and we need to connect those in a linked list or object of some kind taking into account the [rules](#rules) defined above.
+
+Where to start?
+
+Through some noodling around with the problem on paper, I determined the way to appease rule #6 would be to simply check if one shape shares more than one point in the same position with another shape. So we'll need a function for that.
+
+```js
+// for array a, if b in the same position is the same,
+// give it back, return how many 1's we have in common
+Shape.prototype.sharedPoints = function(o) {
+  return this.touch_points.map((v, i) => v && o.touch_points[i]).filter(x => x == 1).length
+}
+```
+
+Another helper we'll need would be a function to return all neighboring cells (including diagonals) so we can determine if we're breaking any of rules 2-6 before placing a tile.
+
+```js
+Shape.prototype.isDiagonal = function(x, y) {
+  return Math.abs(this.x - x) === 1 && Math.abs(this.y - y) === 1
+}
+
+// returns adjacent cells to a cell including diagonals
+// top -> bottom, left -> right, top-left starting point
+Shape.prototype.getNeighbors = function() {
   const neighbors = [];
-  for (let i = Math.max(0, row - 1); i <= Math.min(row + 1, grid.length - 1); i++) {
-    for (let j = Math.max(0, col - 1); j <= Math.min(col + 1, grid[i].length - 1); j++) {
-      if (i !== row || j !== col) {
-        neighbors.push({ x: i, y: j, section: grid[i][j] });
+  for (let i = Math.max(0, this.y - 1); i <= Math.min(this.y + 1, this.stage.grid.length - 1); i++) {
+    for (let j = Math.max(0, this.x - 1); j <= Math.min(this.x + 1, this.stage.grid[i].length - 1); j++) {
+      if (i !== this.y || j !== this.x) {
+        const nei = this.stage.grid[i][j]
+        neighbors.push(nei);
       }
     }
   }
-  return neighbors;
+  return neighbors
+}
+```
+
+And we can test out that those work as intended, we haven't updated the canvas further at this point yet, but we could clear it:
+
+```js
+Stage.prototype.clear = function() {
+  this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+  this.grid.forEach(y => {
+    y.forEach(x => {
+      x.touch_points = [0, 0, 0, 0]
+    })
+  })
 }
 
-// console.log(getCardinalNeighbors(grid, 0, 0))
-// console.log(compareCellMap(pointMap[0], pointMap[6]))
-// console.log(compareCellMap(pointMap[0], pointMap[8]))
+console.log(our_stage.grid[2][2].getNeighbors())
+console.log(our_stage.grid[2][2].sharedPoints(our_stage.grid[3][3])) // 3
 
-const drawGridSection = (ctx, section, eW, eH, x, y) => {
-  grid[x][y].section = section
+our_stage.clear()
+```
+<ScriptRunner includeAbove="true" />
 
-  const points = [
-    [x * eW, y * eH],               // top-left
-    [(x * eW) + eW, y * eH],        // top-right
-    [(x * eW) + eW, (y * eH) + eH], // bottom-right
-    [x * eW, (y * eH) + eH]         // bottom-left
-  ];
+#### Placement
 
-  const moveToPoint = (index, action) => {
-    if (section[index] === 1) ctx[action](...points[index]);
-  };
+So those pretty much work, I am not sure the neighbor function will accomplish everything needed.
 
-  const startIdx = section.findIndex(e => e === 1);
-  moveToPoint(startIdx, 'moveTo');
+Seems like we're getting close, but we will also need a function (or several functions) to determine where to place tiles. The interface to that function determines how you interact with the parameters of the placement.
 
-  for (let i = (startIdx + 1) % 4; i !== startIdx; i = (i + 1) % 4) {
-    moveToPoint(i, 'lineTo');
+```js
+Shape.prototype.isEmpty = function() {
+  return this.touch_points.every(v => v === 0)
+}
+
+Stage.prototype.getRandomEmptyPath = function(startX = 0, startY = 0, l = 4) {
+  const visited = new Set();
+  const startCell = this.grid[startX][startY];
+  const path = [];
+
+  if (startCell.touch_points.some(v => v === 1)) return []; // Starting cell is occupied
+
+  const stack = [[startCell.x, startCell.y]];
+
+  while (path.length < l) {
+    const [row, col] = stack.pop();
+    const neighbors = this.grid[row][col].getNeighbors();
+
+    if (!visited.has(`${row},${col}`)) {
+      visited.add(`${row},${col}`);
+      path.push(this.grid[row][col]);
+
+      const emptyNeighbors = neighbors.filter(r => {
+        return r.touch_points.every(v => v === 0) &&
+        !visited.has(`${r.x},${r.y}`);
+      });
+
+      if (emptyNeighbors.length > 0) {
+        const randomNeighbor = emptyNeighbors[Math.floor(Math.random() * emptyNeighbors.length)];
+        const rn = [randomNeighbor.x, randomNeighbor.y]
+        stack.push(rn);
+      }
+    }
   }
+  return path
+};
 
-  ctx.stroke();
-  ctx.fill();
+console.log(our_stage.getRandomEmptyPath())
+```
+<ScriptRunner includeAbove="true" />
+
+
+```js
+const randomProperty = (obj) => {
+  const keys = Object.keys(obj)
+  return obj[keys[Math.floor(keys.length * Math.random())]]
 }
 
-drawGridSection(ctx, pointTouchMap.tri.tr, eW, eH, 1, 5)
-drawGridSection(ctx, pointTouchMap.line.bottom, eW, eH, 7, 0)
-drawGridSection(ctx, pointTouchMap.tri.bl, eW, eH, 2, 5)
-drawGridSection(ctx, pointTouchMap.tri.tl, eW, eH, 4, 9)
-drawGridSection(ctx, pointTouchMap.line.diag_tl, eW, eH, 6, 8)
+const randomElement = (arr) => {
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+const getSinglePointMatches = (last, curr, o) => {
+  let matches = []
+  Object.keys(o).forEach((k, i) => {
+    const shared = getSharedPoints(last, o[k])
+    if (shared === 1) matches.push(o[k])
+  })
+  return matches
+}
+
+const path1 = getRandomEmptyPath(grid, 5, 5)
+
+let _1 = randomProperty(SM.line)
+let _2 = getSinglePointMatches(_1, path1[1], SM.tri)
+// let _3 =
+// let _4 =
+
+//const shapes = [_1, _2, _3, _4]
+
+path1.forEach(([x, y], i) => {
+  
+  const compound = [
+    [ctx, x, y, _1, eW, eH],
+    [ctx, x, y, SM.tri.tr, eW, eH],
+    [ctx, x, y, SM.line.bottom, eW, eH],
+    [ctx, x, y, SM.tri.tr, eW, eH],
+  ]
+  drawGridShape(...compound[i])
+  last = [x, y]
+})
+
+// for a given x, y and surrounding neighbors
+//  if neighbor[i] = [0, 0, 0, 0]
+//
 ```
-<ScriptRunner autoEval="true" />
-
-The objective is to create a system which can produce many similar but never exactly the same images from a series of tiles. Each tile may or may not be a part of a larger segment which is just a list of ordered tiles. The approach I will be taking is:
-
-- Create a virtual grid, or 2 dimensional array to hold each element, which accepts the following parameters
-  - element width
-  - element height
-  - grid width
-  - grid height
-
-```js
-
-```
-
-Here are the basics for setting up a canvas and drawing to it. Not shown here are the css styles for setting the canvas dimensions & background color.
-
-import ScriptRunner from '@components/script_runner.astro';
-
-```js
-// create a canvas, or query for one
-const canvas = document.createElement('canvas')
-this.appendChild(canvas)
-// CanvasRenderingContext2D
-const ctx = canvas.getContext("2d")
-
-// set fill color and draw a rectangle
-ctx.fillStyle = 'black'
-ctx.fillRect(10,10,100,30)
-```
-<ScriptRunner />
-
-```js
-const lr = document.createElement('div')
-console.log(this)
-console.log(this.button)
-```
-<ScriptRunner />
+<ScriptRunner includeAbove="true" />

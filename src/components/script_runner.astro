@@ -2,17 +2,18 @@
 import { nanoid } from 'nanoid'
 interface Props {
   autoEval: boolean;
+  includeAbove: boolean;
 }
 
 const buttonID = 'button_' + nanoid(4)
 const wrapperID = 'runner_' + nanoid(4)
 
-const { autoEval } = Astro.props
+const { autoEval = false, includeAbove = false } = Astro.props
 ---
 
 <script-runner id={ wrapperID }>
-  <button id={buttonID} data-eval={autoEval}>
-    Evaluate
+  <button id={buttonID} data-eval={autoEval} data-incabv={includeAbove}>
+    Execute {includeAbove && '*'}
   </button>
 </script-runner>
 
@@ -26,6 +27,20 @@ pre.hov {
 </style>
 
 <script>
+const getAllPreAboveThisTextContent = (button: HTMLButtonElement) => {
+  const buttonRect = button.getBoundingClientRect()
+  const preElements = document.querySelectorAll('pre')
+  let plainTextAbove = ''
+
+  preElements.forEach(pre => {
+    const preRect = pre.getBoundingClientRect();
+    if (preRect.bottom <= buttonRect.top) {
+      plainTextAbove += pre.textContent
+    }
+  });
+
+  return plainTextAbove;
+}
 const evalInContext = (js: string, context: any) => {
   return function() { return eval(js); }.call(context);
 }
@@ -50,7 +65,13 @@ class ScriptRunner extends HTMLElement {
       this.pre.className = ''
     })
     this.button.addEventListener('click', () => {
-      evalInContext(this.pre.textContent ?? "", this)
+      if (this.button.dataset.incabv) {
+        let text = getAllPreAboveThisTextContent(this.button)
+        evalInContext(text ?? "", this)
+      } else {
+        evalInContext(this.pre.textContent ?? "", this)
+      }
+      // TODO: make this less violent
       this.pre.className = ''
       this.button.className = 'hidden'
     })
@@ -62,6 +83,7 @@ customElements.define('script-runner', ScriptRunner);
 <style is:global>
 script-runner canvas {
   background: var(--gray);
+  border-radius: 3px;
   display: block;
   margin-top: 1em;
 }
@@ -74,13 +96,15 @@ script-runner {
 }
 script-runner button {
   font-family: 'MicroKnight', sans-serif;
-  font-size: 1.2rem;
-  padding: 0.4rem 0.8rem;
+  font-size: 1.0em;
+  padding: 0.4em 0.8em 0.35em;
   background: var(--black);
   border: 2px solid var(--gray);
+  border-radius: 3px;
   color: var(--gray);
   margin-left: 0.3em;
 }
+script-runner button:focus,
 script-runner button:active,
 script-runner button:hover {
   background: var(--primary);
