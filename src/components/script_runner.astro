@@ -3,16 +3,17 @@ import { nanoid } from 'nanoid'
 interface Props {
   autoEval: boolean;
   includeAbove: boolean;
+  onlyOnce: boolean;
 }
 
 const buttonID = 'button_' + nanoid(4)
 const wrapperID = 'runner_' + nanoid(4)
 
-const { autoEval = false, includeAbove = false } = Astro.props
+const { autoEval = false, includeAbove = false, onlyOnce = false } = Astro.props
 ---
 
 <script-runner id={ wrapperID }>
-  <button id={buttonID} data-eval={autoEval} data-incabv={includeAbove}>
+  <button id={buttonID} data-eval={autoEval} data-incabv={includeAbove} data-once={onlyOnce}>
     Execute {includeAbove && '*'}
   </button>
 </script-runner>
@@ -71,9 +72,10 @@ class ScriptRunner extends HTMLElement {
       } else {
         evalInContext(this.pre.textContent ?? "", this)
       }
-      // TODO: make this less violent
-      this.pre.className = ''
-      this.button.className = 'hidden'
+      if (this.button.dataset.once) {
+        this.pre.className = ''
+        this.button.className = 'hidden'
+      }
     })
   }
 }
@@ -82,7 +84,6 @@ customElements.define('script-runner', ScriptRunner);
 
 <style is:global>
 script-runner canvas {
-  background: var(--gray);
   border-radius: 3px;
   display: block;
   margin-top: 1em;
@@ -91,7 +92,7 @@ script-runner canvas {
 
 <style>
 script-runner {
-  margin-bottom: 2em;
+  margin-top: 1em;
   display:block;
 }
 script-runner button {

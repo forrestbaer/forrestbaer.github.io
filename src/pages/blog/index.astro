@@ -18,7 +18,7 @@ const posts = (await getCollection('blog')).sort(
     <Image src={drake} alt="drake again" width="140" />
     <div>
       <h1>me treasures</h1>
-<p>[<a href="/rss.xml">RSS</a>] <br />log of collected ideas and experimentations</p>
+<p>log of collected ideas and experimentations [<a href="/rss.xml">RSS</a>] </p>
     </div>
   </div>
 <ul>
@@ -39,9 +39,8 @@ const posts = (await getCollection('blog')).sort(
 <style>
 #titleWrap {
   display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-  margin-bottom: 2em;
+  gap: 2em;
+  align-items: center;
 }
 @media all and (max-width: 500px) {
   #titleWrap {
@@ -55,10 +54,10 @@ ul {
   padding: 0;
 }
 .post {
-  margin-bottom: 2ch;
+  margin-top: 2em;
 }
 .post .title {
-  background: var(--gray-light);
+  background: var(--secondary);
   color: var(--black);
   padding: 0 0.8ch;
   display: inline-block;
@@ -67,10 +66,12 @@ ul {
 .post a {
   color: var(--gray);
 }
+.post a:focus,
 .post a:hover {
   color: var(--primary);
   text-decoration: none;
 }
+.post a:focus .title,
 .post a:hover .title {
   background: var(--white);
 }

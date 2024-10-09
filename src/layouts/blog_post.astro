@@ -13,6 +13,11 @@ const { title, description, pubDate, updatedDate } = Astro.props;
 <html lang="en">
 	<head>
 		<BaseHead title={title} description={description} />
+    <style is:global>
+      h4 {
+        margin-top: 2em;
+      }
+    </style>
 		<style>
 			main {
 				width: calc(100%);
@@ -24,11 +29,11 @@ const { title, description, pubDate, updatedDate } = Astro.props;
         display: block;
 			}
 			.title h1 {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
 			}
 			.date {
 				color: var(--gray);
-        margin: 0 0 2rem 0;
+        margin-top: 1em;
 			}
 			.last-updated-on {
 				font-style: italic;
