@@ -13,7 +13,7 @@
   --white: #EFEFEF;
 	--gray-light: #D5D5D5;
 	--gray: #AAA;
-	--gray-dark: #222;
+	--gray-dark: #555;
 }
 @font-face {
     font-family: 'MicroKnight';
@@ -115,6 +115,8 @@ img {
 	max-width: 100%;
 	height: auto;
 	border-radius: 8px;
+  display: block;
+  margin-top: 2em;
 }
 pre {
   font-family: "MicroKnight", "Topaz", "Courier New", monospaced;
@@ -172,8 +174,16 @@ hr {
 }
 
 .prose {
-  max-width: 80%;
-  padding: 2em;
+  max-width: 1000px;
+  padding: 1em 2em;
+}
+
+.flexme {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  gap: 1em;
+  margin-top: 2em;
 }
 
 @media all and (max-width: 800px) {
