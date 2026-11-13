@@ -17,11 +17,11 @@
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
-}
-
-body {
-    line-height: 140%;
-    font-family: monospace;
+  line-height: 140%;
+  font-family: monospace;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-top: 2ch;
 }
 
 body > * {
