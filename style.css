@@ -74,9 +74,11 @@ a {
     color: #a790d5;
     text-decoration: underline;
 }
-
 main {
     padding: 2ch;
+}
+
+#split {
     display: grid;
     width: 100%;
     grid-template-columns: 1fr 1fr;
@@ -145,11 +147,27 @@ article {
     height: 150px;
 }
 
+.masonry {
+  columns: 250px auto; 
+  column-gap: 16px;
+}
+
+.masonry div {
+  break-inside: avoid; 
+  margin-bottom: 16px;
+}
+
+.masonry div img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
 @media (max-width: 768px) {
-    main,
+    #split,
     #about {
         grid-template-columns: 1fr;
         gap: 0;
     }
 }
-
