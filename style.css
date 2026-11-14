@@ -74,6 +74,9 @@ a {
     color: #a790d5;
     text-decoration: underline;
 }
+a:hover {
+    color: #8570a3;
+}
 main {
     padding: 2ch;
 }
@@ -162,6 +165,11 @@ article {
   height: auto;
   display: block;
   border-radius: 8px;
+  border: solid 2px transparent;
+}
+
+.masonry div img:hover {
+  border: solid 2px #333333AA;
 }
 
 @media (max-width: 768px) {
