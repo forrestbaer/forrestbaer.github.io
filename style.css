@@ -169,7 +169,7 @@ article {
 }
 
 .masonry div img:hover {
-  border: solid 2px #333333AA;
+  border: solid 2px var(--text-color);
 }
 
 @media (max-width: 768px) {
