@@ -17,9 +17,10 @@
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
-  line-height: 140%;
+  line-height: 170%;
   font-family: monospace;
-  max-width: 900px;
+  font-size: 14px;
+  max-width: 600px;
   margin: 0 auto;
   padding-top: 2ch;
 }
@@ -38,10 +39,12 @@ h1 {
 }
 h2 {
     font-size: 1.4rem;
+    margin-top: 2ch;
+    margin-bottom: 1ch;
+    padding: 0;
 }
 h3 {
     font-size: 1.2rem;
-    font-weight: bold;
 }
 h4 {
     font-size: 0.8rem;
@@ -93,7 +96,7 @@ header {
     width: 100%;
     justify-content: space-between;
     border-bottom: 1px solid;
-    padding-bottom: 1ch;
+    padding: 0 2ch 1ch;
 }
 
 header input[type="radio"] {
